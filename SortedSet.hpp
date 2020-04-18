@@ -9,6 +9,8 @@ public:
     map< string, map< string, long > > cache_for_val;
     long readCount=0;
     long INF = 1e11;
+
+    // All value of Semaphore is 1
     Semaphore resourceAccess;
     Semaphore readCountAccess;
     Semaphore serviceQueue ;
@@ -20,15 +22,23 @@ public:
         
     };
 
-    void zadd(string key, string member, long score){
+    int zadd(string key, vector<pair<string,long> > &newVal){
+        int valCount=0;
         serviceQueue.wait();   
         resourceAccess.wait(); 
         serviceQueue.signal();
-        if(!cache_for_val[key].count(member)){
-            zset[key].insert({score,member});
-            cache_for_val[key][member]=score;
+        for(auto val:newVal)
+        {
+            long score = val.second;
+            string member = val.first;
+            if(!cache_for_val[key].count(member)){
+                zset[key].insert({score,member});
+                cache_for_val[key][member]=score;
+                valCount++;
+            }
         }
         resourceAccess.signal(); 
+        return valCount;
     }
 
     string zrank(string key, string member){

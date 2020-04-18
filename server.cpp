@@ -12,10 +12,18 @@ int maxPathLen = 10;
 int maxHttpLen = 600;
 int maxClient = 20000;
 int serverPort = 8080;
-struct timeval keepAliveTimeout({30, 0});
-
+struct timeval keepAliveTimeout({300, 0});
 Redis global;
-
+bool isInterger(string num){
+    if(num.size()>18)
+        return false;
+    for(auto &dig:num){
+        if(!(dig>='0'  && dig<='9')){
+            return false;
+        }
+    }
+    return true;
+}
 class Server{
 
 private:
@@ -23,7 +31,8 @@ private:
     int server_fd;
 
 public:
-
+    static void getResponse(vector<string> &,string &);
+    friend bool isInterger();
     Server(int port=8000){
         int opt = 1;
         int addrlen = sizeof(address);
@@ -49,7 +58,7 @@ public:
                 pthread_create(&thread_id[i], NULL, this->__serveClient, &clientSocket[i]);
             }
     }
-
+    
     static void *__serveClient(void *arg){
         int clientSocket = *((int *)arg);
 
@@ -69,61 +78,122 @@ public:
             {
                 data.push_back(word);
             }
-            map<string,int> target;
-            target["SET"] = 1;
-            target["GET"] = 2;
-            target["EXPIRE"] = 3;
-            target["ZADD"] = 4;
-            target["ZRANK"] = 5;
-            target["ZRANGE"] = 6;
+            string res="empty";
             if(data.size()){
-                int x=target[data[0]];
-                cout<<x<<endl;
-                string res="";
-                switch (x)
-                {
-                    case 1:
-                    {
-                        cout<<data[1]<<endl;
-                        if(data.size()<3){
-                             res = "ERR ERR wrong number of arguments for 'set' command";
-                        } else if(data.size()>3){
-                            res = "ERR ERR syntax error";
-                        } else {
-                            res = "OK";
-                        }
-                        break;
-                    }
-                    case 2:
-                        break;
-                    case 3:
-                        break;
-                    case 4:
-                        break;
-                    case 5:
-                        break;
-                    case 6:
-                        break;
-                    default:
-                    {}
-                }
-
+                getResponse(data, res);
+                
             }
+            __sendResponse(clientSocket, res);
            
         }
     }
 
-    static void __sendResponse(int clientSocket, string s) {
+    static void __sendResponse(int clientSocket, string &s) {
         char responseStr[(int)(s.size()+1)];
         strcpy(responseStr, s.c_str());
         write(clientSocket, responseStr, strlen(responseStr));
     }
+
+    
+
 
     ~Server(){
         close(server_fd);
     }
 };
 
+ void Server::getResponse(vector<string> &data,string &res){
+    map<string,int> target;
+    target["SET"] = 1;
+    target["GET"] = 2;
+    target["EXPIRE"] = 3;
+    target["ZADD"] = 4;
+    target["ZRANK"] = 5;
+    target["ZRANGE"] = 6;
+    switch (target[data[0]])
+    {
+        case 1:
+        {
+            if(data.size()!=3){
+                 res = "ERR ERR wrong number of arguments for 'set' command";
+            } else {
+                global.set(data[1],data[2]);
+                res = "OK";
+            }
+            break;
+        }
+        case 2:
+        {   
+            if(data.size()!=2){
+                 res = "ERR ERR wrong number of arguments for 'get' command";
+            } else {
+                res = global.get(data[1]);
+            }
+            break;
+        }
+        case 3:
+        {
+            if(data.size()!=3){
+                 res = "ERR ERR wrong number of arguments for 'expire' command";
+            } else {
+                long val=0,flag=true;
+                for(auto &dig:data[2]){
+                    if(dig>='0'  && dig<='9'){
+                        val = val*10 + dig -'0';
+                    } else {
+                        flag = false;
+                        break;
+                    }
+                }
+                if(flag){
+                    res = global.expire(data[1], val);
+                } else {
+                    res = "ERR ERR value is not an integer or out of range";
+                }
+            }
+            break;
+        }
+        case 4:
+        {
+            if(data.size()%2){
+                res = "ERR ERR wrong number of arguments for 'set' command";
+            } else {
+                int flag=1;
+                vector<pair<string,long>> newVal;
+                for(int i=2;i<data.size();i+=2){
+                    if(data[i].size()>18){
+                        flag = 0;
+                        break;
+                    }
+                    long val=0;
+                    
+                    newVal.push_back(make_pair(data[i+1],val));
+                }
+                if(flag){
+                    res = global.zadd(data[1], newVal);
+                } else {
+                    res = "ERR ERR value is not an integer or out of range";
+                }
+            }
+        }
+        case 5:
+        {
+            if(data.size()!=3){
+                 res = "ERR ERR wrong number of arguments for 'set' command";
+            } else {
+                res = global.zrank(data[1],data[2]);
+            }
+            break;
+        }
+        case 6:
+        {
+
+            break;
+        }
+        default:
+        {}
+    }
+}
 int main(int argc, char const *argv[]){
 
     Server server(serverPort);

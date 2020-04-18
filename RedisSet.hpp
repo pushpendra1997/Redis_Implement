@@ -9,7 +9,7 @@ public:
     long readCount=0;
     Semaphore resourceAccess;
     Semaphore readCountAccess;
-    Semaphore serviceQueue ;
+    Semaphore serviceQueue;
     long INF = 10000000000;
     RedisSet(){
 
@@ -30,17 +30,21 @@ public:
         serviceQueue.wait();   
         resourceAccess.wait(); 
         serviceQueue.signal();
-        cache[key]=make_pair(value, (long)(time(0)*1000.0) + INF);
+        cache[key]=make_pair(value, (long)time(0) + INF);
         resourceAccess.signal(); 
     }
 
-    void expire(string key, long value){
+    bool expire(string key, long value){
+        bool check=false;
         serviceQueue.wait();   
         resourceAccess.wait(); 
         serviceQueue.signal();
-        cache[key].second=(long )time(NULL)+value;
+        if(cache.count(key)){
+            cache[key].second=value;
+            check = true;
+        }
         resourceAccess.signal();
-
+        return check;
     }
 
     string get(string key){
