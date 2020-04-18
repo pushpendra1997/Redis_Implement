@@ -2,13 +2,13 @@
 #include <ext/pb_ds/tree_policy.hpp>
 using namespace std;
 using namespace __gnu_pbds; 
-#define ordered_set tree<pair<long, string> , null_type,less<pair<long, string> >, rb_tree_tag,tree_order_statistics_node_update> 
+#define ordered_set tree<pair<long long, string> , null_type,less<pair<long long, string> >, rb_tree_tag,tree_order_statistics_node_update> 
 class SortedSet{
 public:
     map< string, ordered_set > zset;
-    map< string, map< string, long > > cache_for_val;
-    long readCount=0;
-    long INF = 1e11;
+    map< string, map< string, long long > > cache_for_val;
+    long long readCount=0;
+    long long INF = 1e11;
 
     // All value of Semaphore is 1
     Semaphore resourceAccess;
@@ -22,14 +22,14 @@ public:
         
     };
 
-    int zadd(string key, vector<pair<string,long> > &newVal){
+    int zadd(string key, vector<pair<string,long long> > &newVal){
         int valCount=0;
         serviceQueue.wait();   
         resourceAccess.wait(); 
         serviceQueue.signal();
         for(auto val:newVal)
         {
-            long score = val.second;
+            long long score = val.second;
             string member = val.first;
             if(!cache_for_val[key].count(member)){
                 zset[key].insert({score,member});
@@ -52,12 +52,12 @@ public:
         serviceQueue.signal();
         readCountAccess.signal();
         
-        if(cache_for_val[key].count(member)){
-            long score=cache_for_val[key][member];
-            long getIndex=zset[key].order_of_key(make_pair(score, member));
-            data = "(longeger) " + to_string(getIndex);
+        if(cache_for_val.count(key) && cache_for_val[key].count(member)){
+            long long score=cache_for_val[key][member];
+            long long getIndex=zset[key].order_of_key(make_pair(score, member));
+            data = "(integer) " + to_string(getIndex);
         } else {
-            data = "(nil)";
+            data = "nil";
         }          
         
         readCountAccess.wait();    
@@ -68,8 +68,8 @@ public:
         return data;
     }
 
-    vector<pair<long,string> > zrange(string key,long start, long end){
-        vector<pair<long,string> > data;
+    vector<pair<long long,string> > zrange(string key,long long start, long long end){
+        vector<pair<long long,string> > data;
         bool find=false;
         serviceQueue.wait();
         readCountAccess.wait();
@@ -79,8 +79,9 @@ public:
         readCount++;
         serviceQueue.signal();
         readCountAccess.signal();
-
-        long sz = zset[key].size();
+        long long sz = 0;
+        if(zset.count(key))
+            sz = zset[key].size();
         if(end>=sz)end=sz-1;
         if(end<0)end+=sz;
         if(start<0) start+=sz;

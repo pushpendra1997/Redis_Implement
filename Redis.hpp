@@ -14,7 +14,7 @@ public:
     	rediskv.set(key,value);
     }
 
-    string expire(string key, long extime){
+    string expire(string key, long long extime){
     	extime +=time(0);
     	bool flag=rediskv.expire(key, extime);
     	if(flag){
@@ -28,13 +28,23 @@ public:
     	return rediskv.get(key);
     }
 
-    string zadd(string key, vector<pair<string,long> > &value){
+    string zadd(string key, vector<pair<string,long long> > &value){
     	int cnt = sortedset.zadd(key, value);
     	return "(integer) " + to_string(cnt); 
     }
-    
+
     string zrank(string key, string member){
     	return sortedset.zrank(key, member);
+    }
+
+    string zrange(string key, long long start, long long end){
+    	vector<pair<long long,string> > zran = sortedset.zrange(key, start, end);
+    	string res ;
+    	for(auto i:zran){
+    		res.append(i.second + "\n");
+    	}
+    	if(res.size())res.pop_back();
+    	return res;
     }
 
 };

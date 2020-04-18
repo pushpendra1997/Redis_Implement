@@ -6,6 +6,7 @@
 #include <bits/stdc++.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "constants.hpp"
 #include "Redis.hpp"
 using namespace std;
 int maxPathLen = 10;
@@ -13,17 +14,24 @@ int maxHttpLen = 600;
 int maxClient = 20000;
 int serverPort = 8080;
 struct timeval keepAliveTimeout({300, 0});
+
 Redis global;
-bool isInterger(string num){
-    if(num.size()>18)
+
+bool isValidInterger(string num){
+    if(num.size()==0 || num.size()>18+(num[0]=='-'))
         return false;
+    bool flag=true;
     for(auto &dig:num){
+        if(flag && dig=='-')
+            continue;
         if(!(dig>='0'  && dig<='9')){
             return false;
         }
+        flag = false;
     }
     return true;
 }
+
 class Server{
 
 private:
@@ -32,7 +40,7 @@ private:
 
 public:
     static void getResponse(vector<string> &,string &);
-    friend bool isInterger();
+    friend bool isValidInterger(string );
     Server(int port=8000){
         int opt = 1;
         int addrlen = sizeof(address);
@@ -88,7 +96,7 @@ public:
         }
     }
 
-    static void __sendResponse(int clientSocket, string &s) {
+    static void __sendResponse(int clientSocket, string s) {
         char responseStr[(int)(s.size()+1)];
         strcpy(responseStr, s.c_str());
         write(clientSocket, responseStr, strlen(responseStr));
@@ -103,19 +111,18 @@ public:
 };
 
  void Server::getResponse(vector<string> &data,string &res){
-    map<string,int> target;
-    target["SET"] = 1;
-    target["GET"] = 2;
-    target["EXPIRE"] = 3;
-    target["ZADD"] = 4;
-    target["ZRANK"] = 5;
-    target["ZRANGE"] = 6;
-    switch (target[data[0]])
+    int x;
+    if(target.find(data[0])==target.end()){
+        x = 0;
+    } else {
+        x =  target.find(data[0])->second;
+    }
+    switch (x)
     {
         case 1:
         {
             if(data.size()!=3){
-                 res = "ERR ERR wrong number of arguments for 'set' command";
+                 res = setStringError;
             } else {
                 global.set(data[1],data[2]);
                 res = "OK";
@@ -125,7 +132,7 @@ public:
         case 2:
         {   
             if(data.size()!=2){
-                 res = "ERR ERR wrong number of arguments for 'get' command";
+                 res = getStringError;
             } else {
                 res = global.get(data[1]);
             }
@@ -134,52 +141,43 @@ public:
         case 3:
         {
             if(data.size()!=3){
-                 res = "ERR ERR wrong number of arguments for 'expire' command";
+                 res = expireStringError;
             } else {
-                long val=0,flag=true;
-                for(auto &dig:data[2]){
-                    if(dig>='0'  && dig<='9'){
-                        val = val*10 + dig -'0';
-                    } else {
-                        flag = false;
-                        break;
-                    }
-                }
-                if(flag){
-                    res = global.expire(data[1], val);
+                if(isValidInterger(data[2])){
+                    res = global.expire(data[1], stoll(data[2]));
                 } else {
-                    res = "ERR ERR value is not an integer or out of range";
+                    res = integerStringError;
                 }
             }
             break;
         }
         case 4:
         {
-            if(data.size()%2){
-                res = "ERR ERR wrong number of arguments for 'set' command";
+            if(data.size()%2 || data.size()<4){
+                res = zaddStringError;
             } else {
                 int flag=1;
-                vector<pair<string,long>> newVal;
+                vector<pair<string,long long>> newVal;
                 for(int i=2;i<data.size();i+=2){
-                    if(data[i].size()>18){
+                    if(!isValidInterger(data[i])){
                         flag = 0;
                         break;
                     }
-                    long val=0;
-                    
-                    newVal.push_back(make_pair(data[i+1],val));
+
+                    newVal.push_back(make_pair(data[i+1],stoll(data[i])));
                 }
                 if(flag){
                     res = global.zadd(data[1], newVal);
                 } else {
-                    res = "ERR ERR value is not an integer or out of range";
+                    res = integerStringError;
                 }
             }
+            break;
         }
         case 5:
         {
             if(data.size()!=3){
-                 res = "ERR ERR wrong number of arguments for 'set' command";
+                 res = zrankStringError;
             } else {
                 res = global.zrank(data[1],data[2]);
             }
@@ -187,11 +185,21 @@ public:
         }
         case 6:
         {
-
+            if(data.size()!=4){
+                 res = zrangeStringError;
+            } else {
+                if(isValidInterger(data[2]) && isValidInterger(data[3])){
+                    res = global.zrange(data[1], stoll(data[2]), stoll(data[3]));
+                } else {
+                    res = integerStringError;
+                }
+            }
             break;
         }
         default:
-        {}
+        {
+            res = unkownStringError;
+        }
     }
 }
 int main(int argc, char const *argv[]){

@@ -5,12 +5,12 @@ using namespace std;
 
 class RedisSet{
 public:
-    map<string, pair<string, long> > cache;
-    long readCount=0;
+    map<string, pair<string, long long> > cache;
+    long long readCount=0;
     Semaphore resourceAccess;
     Semaphore readCountAccess;
     Semaphore serviceQueue;
-    long INF = 10000000000;
+    long long INF = 10000000000;
     RedisSet(){
 
     };
@@ -30,11 +30,11 @@ public:
         serviceQueue.wait();   
         resourceAccess.wait(); 
         serviceQueue.signal();
-        cache[key]=make_pair(value, (long)time(0) + INF);
+        cache[key]=make_pair(value, (long long)time(0) + INF);
         resourceAccess.signal(); 
     }
 
-    bool expire(string key, long value){
+    bool expire(string key, long long value){
         bool check=false;
         serviceQueue.wait();   
         resourceAccess.wait(); 
@@ -48,7 +48,7 @@ public:
     }
 
     string get(string key){
-        pair<string,long> data;
+        pair<string,long long> data;
         bool find=false;
         string value;
 
@@ -73,8 +73,8 @@ public:
             resourceAccess.signal();
         readCountAccess.signal();
 
-        if(find && (long)data.second>=(long)time(NULL)){
-            return "\""+ data.first+ "\"";
+        if(find && (long long)data.second>=(long long)time(NULL)){
+            return  data.first;
         } else {
             return "(nil)";
         }
