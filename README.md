@@ -16,6 +16,17 @@ Boot up the client using,
 ```
 ./client
 ```
+```
+ SET KEY VALUE
+ GET KEY
+ DEL KEY1 KEY2 KEY3 ... KEYN                                      (N > 0)
+ TTL KEY 
+ EXPIRE KEY time                                                  (time should be number)
+ ZADD KEY score1 member1 score2 member2 ... scoreN member N       (N > 0)
+ ZRANGE KEY start end                                             (start and end should be number)
+ ZRANK KEY member
+ 
+```
 Begin entering the commands! You can also have multiple clients connected at once.
 # Functionality
 
