@@ -203,8 +203,13 @@ public:
         }
         case 8:
         {
-            data.erase(data.begin());
-            res = global.del(data);
+            if(data.size()>1)
+            {
+                data.erase(data.begin());
+                res = global.del(data);
+            } else {
+                res = delStringError;
+            }
             break;
         }
         default:

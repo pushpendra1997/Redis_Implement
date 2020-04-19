@@ -14,6 +14,8 @@ const std::string zrangeStringError = "ERR ERR wrong number of arguments for 'zr
 
 const std::string ttlStringError = "ERR ERR wrong number of arguments for 'ttl' command";
 
+const std::string delStringError = "ERR ERR wrong number of arguments for 'del' command";
+
 const std::string integerStringError = "ERR ERR value is not an integer or out of range";
 
 const std::string unkownStringError = "ERR Unknown or disabled command";

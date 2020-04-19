@@ -9,6 +9,30 @@ private:
     Semaphore serviceQueue;
 
 public:
+	friend std::ostream & operator << (std::ostream &out, RedisSet & obj)
+	{
+        obj.writeEnter();
+        out << obj.cache.size() << "\n";
+        for(auto& element : obj.cache){
+            out << element.first << "\n" << element.second.first << "\n" << element.second.second << "\n";
+        }
+        obj.writeExit();
+		return out;
+	}
+
+	friend std::istream & operator >> (std::istream &in,  RedisSet &obj)
+	{
+        obj.cache.clear();
+        decltype(cache.size()) size;
+		in >> size;
+        for(decltype(size) i=0; i < size ;i++){
+            string a,b; long long c;
+            in >> a >> b >> c;
+            obj.cache[a] = {b,c};
+        }
+		return in;
+	}
+     
     RedisSet(){
 
     };

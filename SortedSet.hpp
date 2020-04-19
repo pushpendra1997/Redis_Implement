@@ -10,7 +10,6 @@ private:
     unordered_map< string, ordered_set > zset;
     unordered_map< string, unordered_map< string, long long > > cache_for_val;
     long long readCount=0;
-    long long INF = 1e11;
 
     // All value of Semaphore is 1
     Semaphore resourceAccess;
@@ -18,7 +17,62 @@ private:
     Semaphore serviceQueue ;
 
 public:
+	friend std::ostream & operator << (std::ostream &out, SortedSet & obj)
+	{
+        obj.writeEnter();
+        out << obj.zset.size() << "\n";
+        for(auto& element : obj.zset){
+            out << element.first << "\n" << element.second.size() << "\n";
+            for(auto& ordEle : element.second){
+                out << ordEle.first << "\n" << ordEle.second << "\n";
+            }
+        }
 
+        out << obj.cache_for_val.size() << "\n";
+        for(auto& element : obj.cache_for_val){
+            out << element.first << "\n" << element.second.size() << "\n";
+            for(auto& mapEle : element.second){
+                out << mapEle.first << "\n" << mapEle.second << "\n";
+            }
+        }        
+        obj.writeExit();
+		return out;
+	}
+
+	friend std::istream & operator >> (std::istream &in,  SortedSet &obj)
+	{
+        obj.zset.clear();
+        obj.cache_for_val.clear();
+
+        decltype(zset.size()) size;
+		in >> size;
+        for(decltype(size) i=0; i < size ;i++){
+            string a; decltype(size) os;
+            in >> a >> os;
+            ordered_set temp_s;
+            for(decltype(os) j=0 ; j<os ;j++){
+                long long b; string c;
+                in >> b >> c;
+                temp_s.insert({b,c});
+            }
+        obj.zset[a] = temp_s;
+        }
+
+
+		in >> size;
+        for(decltype(size) i=0; i < size ;i++){
+            string a; decltype(size) os;
+            in >> a >> os;
+            unordered_map< string, long long > temp_m;
+            for(decltype(os) j=0 ; j<os ;j++){
+                long long c; string b;
+                in >> b >> c;
+                temp_m[b] = c;
+            }
+            obj.cache_for_val[a] = temp_m;
+        }        
+		return in;
+	}    
     SortedSet(){
 
     };
