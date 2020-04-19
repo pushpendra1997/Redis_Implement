@@ -1,10 +1,11 @@
 #include <ext/pb_ds/assoc_container.hpp> 
 #include <ext/pb_ds/tree_policy.hpp>
-using namespace std;
 using namespace __gnu_pbds; 
 #define ordered_set tree<pair<long long, string> , null_type,less<pair<long long, string> >, rb_tree_tag,tree_order_statistics_node_update> 
+
+
 class SortedSet{
-public:
+private:
     map< string, ordered_set > zset;
     map< string, map< string, long long > > cache_for_val;
     long long readCount=0;
@@ -14,6 +15,7 @@ public:
     Semaphore resourceAccess;
     Semaphore readCountAccess;
     Semaphore serviceQueue ;
+public:
 
     SortedSet(){
 
@@ -79,21 +81,22 @@ public:
         readCount++;
         serviceQueue.signal();
         readCountAccess.signal();
-        long long sz = 0;
         if(zset.count(key))
-            sz = zset[key].size();
-        if(end>=sz)end=sz-1;
-        if(end<0)end+=sz;
-        if(start<0) start+=sz;
-        if(start>=0 && end>=start){
-            auto st = zset[key].find_by_order(start);
-            auto ed = zset[key].find_by_order(end);
+        {
+            long long sz  = zset[key].size();
+            if(end>=sz)end=sz-1;
+            if(end<0)end+=sz;
+            if(start<0) start+=sz;
+            if(start>=0 && end>=start){
+                auto st = zset[key].find_by_order(start);
+                auto ed = zset[key].find_by_order(end+1);
 
-            do {
-                data.push_back(*st);
-                st++;
+                while(st!=ed) {
+                    data.push_back(*st);
+                    st++;
 
-            }while(st!=ed);
+                }
+            }
         }
 
         readCountAccess.wait();    

@@ -31,10 +31,14 @@ int main(int argc, char const *argv[])
     }
     while(true) {
         cout<<"redis > ";
-        cin.getline(hello,50);
-        send(sock , hello , strlen(hello) , 0 );  
-        valread = read( sock , buffer, 1024); 
-        cout<<buffer<<endl;
+        string hello;
+        getline(cin,hello);
+        if(hello.size())
+        {
+            send(sock , hello.c_str(), hello.size(), 0);  
+            valread = read( sock , buffer, 1024); 
+            cout<<buffer<<endl;
+        }
     }
     return 0; 
 } 

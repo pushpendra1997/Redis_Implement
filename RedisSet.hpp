@@ -1,16 +1,14 @@
-#include <bits/stdc++.h>
-using namespace std;
-
 
 
 class RedisSet{
-public:
+private:
     map<string, pair<string, long long> > cache;
     long long readCount=0;
     Semaphore resourceAccess;
     Semaphore readCountAccess;
     Semaphore serviceQueue;
     long long INF = 10000000000;
+public:
     RedisSet(){
 
     };
@@ -30,7 +28,7 @@ public:
         serviceQueue.wait();   
         resourceAccess.wait(); 
         serviceQueue.signal();
-        cache[key]=make_pair(value, (long long)time(0) + INF);
+        cache[key]=make_pair(value, -1);
         resourceAccess.signal(); 
     }
 
@@ -73,11 +71,42 @@ public:
             resourceAccess.signal();
         readCountAccess.signal();
 
-        if(find && (long long)data.second>=(long long)time(NULL)){
+        if(find && ((long long)data.second>=(long long)time(NULL)) or data.second==-1){
             return  data.first;
         } else {
             return "(nil)";
         }
+    }
+
+    long long ttl(string key){
+        long long remTime = -1;
+        string value;
+
+        serviceQueue.wait();
+        readCountAccess.wait();
+
+        if(readCount == 0)
+            resourceAccess.wait();
+        readCount++;
+        serviceQueue.signal();
+        readCountAccess.signal();
+
+
+        if(cache.count(key)){
+            remTime=cache[key].second-time(0);
+            if(remTime < 0){
+                remTime = -1;
+            }
+        }
+
+        readCountAccess.wait();    
+        readCount--;               
+        if (readCount == 0)        
+            resourceAccess.signal();
+        readCountAccess.signal();
+
+        return remTime;
+
     }
 
 };

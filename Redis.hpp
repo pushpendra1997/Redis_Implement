@@ -1,17 +1,15 @@
-#include <bits/stdc++.h>
-using namespace std;
-
 #include "semaphore.hpp"
 #include "RedisSet.hpp"
 #include "SortedSet.hpp"
 
 class Redis{
-public:
+private:
     RedisSet rediskv;
     SortedSet sortedset;
-
-    void set(string key, string value){
+public:
+    string set(string key, string value){
     	rediskv.set(key,value);
+        return "ok";
     }
 
     string expire(string key, long long extime){
@@ -27,6 +25,11 @@ public:
     string get(string key){
     	return rediskv.get(key);
     }
+
+    string ttl(string key){
+        long long remTime = rediskv.ttl(key);
+        return "(integer) " + to_string(remTime);
+    }    
 
     string zadd(string key, vector<pair<string,long long> > &value){
     	int cnt = sortedset.zadd(key, value);
@@ -46,5 +49,6 @@ public:
     	if(res.size())res.pop_back();
     	return res;
     }
+
 
 };

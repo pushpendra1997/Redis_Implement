@@ -1,14 +1,11 @@
 #include <bits/stdc++.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <unistd.h>
-#include <mutex>
-#include <bits/stdc++.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include "constants.hpp"
-#include "Redis.hpp"
 using namespace std;
+#include "Redis.hpp"
 int maxPathLen = 10;
 int maxHttpLen = 600;
 int maxClient = 20000;
@@ -86,12 +83,13 @@ public:
             {
                 data.push_back(word);
             }
-            string res="empty";
+            string res = emptyStringError;
             if(data.size()){
                 getResponse(data, res);
-                
             }
-            __sendResponse(clientSocket, res);
+            res+='\0';
+            write(clientSocket, res.c_str(), res.size());
+
            
         }
     }
@@ -103,29 +101,26 @@ public:
     }
 
     
-
-
     ~Server(){
         close(server_fd);
     }
 };
 
  void Server::getResponse(vector<string> &data,string &res){
-    int x;
+    int option;
     if(target.find(data[0])==target.end()){
-        x = 0;
+        option = 0;
     } else {
-        x =  target.find(data[0])->second;
+        option =  target.find(data[0])->second;
     }
-    switch (x)
+    switch (option)
     {
         case 1:
         {
             if(data.size()!=3){
                  res = setStringError;
             } else {
-                global.set(data[1],data[2]);
-                res = "OK";
+                res = global.set(data[1],data[2]);
             }
             break;
         }
@@ -196,12 +191,23 @@ public:
             }
             break;
         }
+        case 7:
+        {
+            if(data.size()!=2){
+                 res = ttlStringError;
+            } else {
+                res = global.ttl(data[1]);
+            }
+            break;
+        }
         default:
         {
             res = unkownStringError;
         }
     }
 }
+
+
 int main(int argc, char const *argv[]){
 
     Server server(serverPort);
