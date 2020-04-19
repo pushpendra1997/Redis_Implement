@@ -20,7 +20,7 @@ const std::string unkownStringError = "ERR Unknown or disabled command";
 
 const std::string emptyStringError = "NULL String";
  
-std::map<std::string,int> target = { {"SET", 1}, {"GET", 2}, {"EXPIRE", 3}, {"ZADD", 4}, {"ZRANK", 5}, {"ZRANGE", 6} , {"TTL", 7} };
+std::unordered_map<std::string,int> target = { {"SET", 1}, {"GET", 2}, {"EXPIRE", 3}, {"ZADD", 4}, {"ZRANK", 5}, {"ZRANGE", 6} , {"TTL", 7} , {"DEL", 8}};
     
     
     

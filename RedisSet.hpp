@@ -2,12 +2,12 @@
 
 class RedisSet{
 private:
-    map<string, pair<string, long long> > cache;
+    unordered_map<string, pair<string, long long> > cache;
     long long readCount=0;
     Semaphore resourceAccess;
     Semaphore readCountAccess;
     Semaphore serviceQueue;
-    long long INF = 10000000000;
+
 public:
     RedisSet(){
 
@@ -16,40 +16,7 @@ public:
 
     };
 
-    void del(string key){
-        serviceQueue.wait();   
-        resourceAccess.wait(); 
-        serviceQueue.signal();
-        cache.erase(key);
-        resourceAccess.signal(); 
-    }
-
-    void set(string key, string value){
-        serviceQueue.wait();   
-        resourceAccess.wait(); 
-        serviceQueue.signal();
-        cache[key]=make_pair(value, -1);
-        resourceAccess.signal(); 
-    }
-
-    bool expire(string key, long long value){
-        bool check=false;
-        serviceQueue.wait();   
-        resourceAccess.wait(); 
-        serviceQueue.signal();
-        if(cache.count(key)){
-            cache[key].second=value;
-            check = true;
-        }
-        resourceAccess.signal();
-        return check;
-    }
-
-    string get(string key){
-        pair<string,long long> data;
-        bool find=false;
-        string value;
-
+    void readEnter(){
         serviceQueue.wait();
         readCountAccess.wait();
 
@@ -58,52 +25,114 @@ public:
         readCount++;
         serviceQueue.signal();
         readCountAccess.signal();
+    }
 
-
-        if(cache.count(key)){
-            data=cache[key];
-            find=true;
-        }
-
+    void readExit(){
         readCountAccess.wait();    
         readCount--;               
         if (readCount == 0)        
             resourceAccess.signal();
-        readCountAccess.signal();
+        readCountAccess.signal(); 
+    }
 
-        if(find && ((long long)data.second>=(long long)time(NULL)) or data.second==-1){
+    void writeEnter(){
+        serviceQueue.wait();   
+        resourceAccess.wait(); 
+        serviceQueue.signal();
+    }
+
+    void writeExit(){
+        resourceAccess.signal();
+    }
+
+    long long del(vector<string> keys){
+        long long keydel = 0;
+        writeEnter();
+        for(auto &key:keys)
+        {
+            if(cache.count(key)){
+                cache.erase(key);
+                keydel++;
+            }
+        }
+
+        writeExit();
+
+        return keydel;
+
+    }
+
+    void set(string key, string value){
+        writeEnter();
+
+        cache[key]=make_pair(value, -1);
+
+        writeExit();
+    }
+
+    bool expire(string key, long long value){
+        bool check = false;
+
+        writeEnter();
+
+        if(cache.count(key)){
+            cache[key].second = value;
+            check = true;
+        }
+
+        writeExit();
+        return check;
+    }
+
+    string get(string key){
+
+        pair<string,long long> data;
+        bool find = false;
+        string value;
+
+        readEnter();
+
+        if(cache.count(key)){
+            data = cache[key];
+            find = true;
+        }
+
+        readExit();
+
+        if( find && ((long long)data.second >= (long long)time(NULL)) or data.second == -1 ){
             return  data.first;
         } else {
             return "(nil)";
         }
     }
 
+    bool isExist(string key){
+        bool isexist=false;
+
+        readEnter();
+
+        isexist = cache.count(key);
+
+        readExit();
+
+        return isexist;
+
+    }
+
     long long ttl(string key){
         long long remTime = -1;
         string value;
 
-        serviceQueue.wait();
-        readCountAccess.wait();
+        readEnter();
 
-        if(readCount == 0)
-            resourceAccess.wait();
-        readCount++;
-        serviceQueue.signal();
-        readCountAccess.signal();
-
-
-        if(cache.count(key)){
-            remTime=cache[key].second-time(0);
+        if( cache.count(key) ){
+            remTime = cache[key].second - time(0);
             if(remTime < 0){
                 remTime = -1;
             }
         }
 
-        readCountAccess.wait();    
-        readCount--;               
-        if (readCount == 0)        
-            resourceAccess.signal();
-        readCountAccess.signal();
+        readExit();
 
         return remTime;
 

@@ -113,6 +113,7 @@ public:
     } else {
         option =  target.find(data[0])->second;
     }
+    cout<<option<<endl;
     switch (option)
     {
         case 1:
@@ -151,11 +152,11 @@ public:
             if(data.size()%2 || data.size()<4){
                 res = zaddStringError;
             } else {
-                int flag=1;
+                int flag = true;
                 vector<pair<string,long long>> newVal;
                 for(int i=2;i<data.size();i+=2){
                     if(!isValidInterger(data[i])){
-                        flag = 0;
+                        flag = false;
                         break;
                     }
 
@@ -198,6 +199,12 @@ public:
             } else {
                 res = global.ttl(data[1]);
             }
+            break;
+        }
+        case 8:
+        {
+            data.erase(data.begin());
+            res = global.del(data);
             break;
         }
         default:

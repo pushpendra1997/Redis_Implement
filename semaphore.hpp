@@ -3,16 +3,19 @@
 
 class Semaphore
 {
+
 private:
     std::mutex mutex_;
     std::condition_variable condition_;
     unsigned long long count_;
 
 public:
+
     Semaphore(){
         count_ =1;
 
     }
+    
     void signal() {
         std::lock_guard<decltype(mutex_)> lock(mutex_);
         ++count_;
