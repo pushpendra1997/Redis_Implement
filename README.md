@@ -16,6 +16,7 @@ Boot up the client using,
 ```
 ./client
 ```
+Commands
 ```
  SET KEY VALUE
  GET KEY
