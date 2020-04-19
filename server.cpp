@@ -75,6 +75,9 @@ public:
         char request[maxHttpLen];
         while(true) {
             int sz = read(clientSocket , request , maxHttpLen);
+            if(sz<=0) {
+                pthread_exit(NULL);
+            }
             request[sz] = '\0';
             stringstream req(request);
             string word;
