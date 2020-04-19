@@ -19,14 +19,14 @@ Boot up the client using,
 Begin entering the commands! You can also have multiple clients connected at once.
 # Functionality
 
-- **SET** - Store ${key,value}$ pair in the cache. Average runtime complexity - $O(1)$
-- **GET**  - Retrive $value$ associated to $key$ from cache. Average runtime complexity - $O(1)$ 
-- **DELETE** - Delete $key$ and associated $value$from cache. Average runtime complexity - $O(1)$ 
-- **TTL** -  Display time-to-live of $key$ in cache. Average runtime complexity - $O(1)$ 
-- **EXPIRE** - Set an expirty time for a given $key$. Average runtime complexity - $O(1)$ 
-- **ZADD** -  Add an element to an ordered set. Runtime complexity $O(log(N))$  where $N$ is number of element associated to  $key$ of the ordered set.
-- **ZRANGE** - Display elements within specified range in an ordered set. Runtime complexity - $O(M+log(N))$ where $N$ is number of element associated to  $key$ of the ordered set.
-- **ZRANK** - Display rank of element in an ordered set.  Runtime complexity -  $O(log(N))$ where $N$ is number of element associated to  $key$ of the ordered set.
+- **SET** - Store {key,value} pair in the cache. Average runtime complexity - O(1)
+- **GET**  - Retrive value associated to key from cache. Average runtime complexity - O(1) 
+- **DELETE** - Delete key and associated valuefrom cache. Average runtime complexity - O(1) 
+- **TTL** -  Display time-to-live of key in cache. Average runtime complexity - O(1) 
+- **EXPIRE** - Set an expirty time for a given key. Average runtime complexity - O(1) 
+- **ZADD** -  Add an element to an ordered set. Runtime complexity O(log(N))  where N is number of element associated to  key of the ordered set.
+- **ZRANGE** - Display elements within specified range in an ordered set. Runtime complexity - O(M+log(N)) where N is number of element associated to  key of the ordered set.
+- **ZRANK** - Display rank of element in an ordered set.  Runtime complexity -  O(log(N)) where N is number of element associated to  key of the ordered set.
 
 
 - **Persistence** - The cache data persists through multiple sessions. It periodically takes a snapshot of data within the cache and reloads the data upon startup. Additionally, it automatically creates a snapshot upon termination.
@@ -46,8 +46,8 @@ Furthermore, the STL (Standard Template Library) offers fantastic multithreading
 
 # Data Structures
 
-- A Hash Map was used for implementing the GET/SET/EXPIRE/TTL/DELETE commands . Through this data structure, we are able to support the mentioned operations in an average runtime complexity of $O(1)$ which is constant time.
-- For the ordered set functionality, an inbuilt container named 'Ordered set' has been used. Internally, it is a self balancing binary search tree through which, we can where we can find index of elements in a sorted set in $log(N)$ where $N$ is the number of elements in the set. Additionally, We can also find all element int the range between the two indices in $O(M+logn(N))$.
+- A Hash Map was used for implementing the GET/SET/EXPIRE/TTL/DELETE commands . Through this data structure, we are able to support the mentioned operations in an average runtime complexity of O(1) which is constant time.
+- For the ordered set functionality, an inbuilt container named 'Ordered set' has been used. Internally, it is a self balancing binary search tree through which, we can where we can find index of elements in a sorted set in log(N) where N is the number of elements in the set. Additionally, We can also find all element int the range between the two indices in O(M+logn(N)).
 
 
 # Multithreading Support
