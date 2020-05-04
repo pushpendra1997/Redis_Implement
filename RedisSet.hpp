@@ -1,5 +1,6 @@
-
-
+#ifndef REDIS_SET
+#define REDIS_SET
+#include <sstream>
 class RedisSet{
 private:
     unordered_map<string, pair<string, long long> > cache;
@@ -163,3 +164,6 @@ public:
     }
 
 };
+
+
+#endif

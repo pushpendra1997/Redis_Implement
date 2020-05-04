@@ -1,3 +1,6 @@
+#ifndef SEMAPHORE
+#define SEMAPHORE
+
 #include <mutex>
 #include <condition_variable>
 
@@ -38,3 +41,4 @@ public:
         return false;
     }
 };
+#endif

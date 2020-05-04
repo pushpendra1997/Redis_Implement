@@ -1,6 +1,11 @@
+#ifndef REDIS
+#define REDIS
+
 #include "semaphore.hpp"
 #include "RedisSet.hpp"
+
 #include "SortedSet.hpp"
+#include <chrono>
 const string REDIS_SET_BACKUP = "RsetBackup.txt";
 const string SORTED_SET_BACKUP = "SsetBackup.txt";
 class Redis{
@@ -100,3 +105,5 @@ public:
 
 
 };
+
+#endif
