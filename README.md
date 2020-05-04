@@ -1,12 +1,12 @@
 # Run Instructions
 Complie the server using the following command:
 ```
- g++ server.cpp -o server -lpthread
+ g++ server.cpp --std=c++14 -o server -lpthread
 ```
 
 Next, complie the included client using the command
 ```
-g++ client.cpp -o client -lpthread
+g++ client.cpp --std=c++14 -o client -lpthread
 ```
 Boot up the server using,
 ```
@@ -15,6 +15,19 @@ Boot up the server using,
 Boot up the client using,
 ```
 ./client
+```
+
+Commands
+```
+ SET KEY VALUE
+ GET KEY
+ DEL KEY1 KEY2 KEY3 ... KEYN                                      (N > 0)
+ TTL KEY 
+ EXPIRE KEY time                                                  (time should be number)
+ ZADD KEY score1 member1 score2 member2 ... scoreN member N       (N > 0)
+ ZRANGE KEY start end                                             (start and end should be number)
+ ZRANK KEY member
+ 
 ```
 Begin entering the commands! You can also have multiple clients connected at once.
 # Functionality
@@ -54,3 +67,14 @@ Furthermore, the STL (Standard Template Library) offers fantastic multithreading
 
 Yes, the implementation offers multithreading support. 
 It can handle multiple clients connected to the cache in parallel. Race conditions are handled through the use of mutexes, locks, semaphores and condition variables to assure thread-safety.
+
+
+
+
+
+
+
+
+
+![alt text](https://github.com/pushpendra1997/redis_cpp/blob/master/Screenshot%20from%202020-04-22%2009-44-49.png)
+![alt text](https://github.com/pushpendra1997/redis_cpp/blob/master/Screenshot%20from%202020-04-22%2009-49-48.png)
