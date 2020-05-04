@@ -76,5 +76,4 @@ It can handle multiple clients connected to the cache in parallel. Race conditio
 
 
 
-![alt text](https://github.com/pushpendra1997/redis_cpp/blob/master/Screenshot%20from%202020-04-22%2009-44-49.png)
-![alt text](https://github.com/pushpendra1997/redis_cpp/blob/master/Screenshot%20from%202020-04-22%2009-49-48.png)
+
